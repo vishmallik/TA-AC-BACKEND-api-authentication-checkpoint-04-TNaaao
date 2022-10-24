@@ -12,6 +12,7 @@ mongoose.connect("mongodb://127.0.0.1/forum", (err) => {
 });
 
 const usersRouter = require("./routes/users");
+const adminRouter = require("./routes/admin");
 const profileRouter = require("./routes/profile");
 const questionsRouter = require("./routes/questions");
 const answersRouter = require("./routes/answers");
@@ -26,6 +27,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/api/users", usersRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/questions", questionsRouter);
 app.use("/api/answers", answersRouter);

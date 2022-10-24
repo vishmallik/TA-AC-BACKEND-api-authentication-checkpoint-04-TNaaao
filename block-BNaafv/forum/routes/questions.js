@@ -3,6 +3,8 @@ const router = express.Router();
 const auth = require("../middlewares/auth");
 const Question = require("../models/question");
 const Answer = require("../models/answer");
+const Comment = require("../models/comment");
+const User = require("../models/user");
 
 //create question
 router.post("/", auth.verifyToken, async function (req, res, next) {
@@ -95,4 +97,58 @@ router.get("/:slug/answers", auth.verifyToken, async (req, res, next) => {
   }
 });
 
+//upvote question
+router.put("/:slug/vote", async (req, res, next) => {
+  let slug = req.params.slug;
+  try {
+    let question = Question.findOneAndUpdate({ slug }, { $inc: { votes: 1 } });
+    return res.json({ question });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+//downvote question
+router.delete("/:slug/vote", async (req, res, next) => {
+  let slug = req.params.slug;
+  try {
+    let question = Question.findOneAndUpdate({ slug }, { $inc: { votes: -1 } });
+    return res.json({ question });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+//add comment on question
+router.post("/:slug/comments", auth.verifyToken, async (req, res, next) => {
+  let slug = req.params.slug;
+  try {
+    let question = await Question.findOne({ slug });
+    req.body.author = req.user.id;
+    req.body.questionId = question.id;
+    let comment = await Comment.create(req.body);
+    let updatedQuestion = await Question.findOneAndUpdate(
+      { slug },
+      { $push: { comments: comment.id } }
+    );
+    return res.json({ comment });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+//admin can track all questions
+router.delete("/", auth.verifyToken, async (req, res, next) => {
+  try {
+    let user = await User.findById(req.user.id);
+    if (user.isAdmin) {
+      let questions = await Question.deleteMany({});
+      return res.json({ questions });
+    } else {
+      return next("You are not allowed to do this action.");
+    }
+  } catch (error) {
+    return next(error);
+  }
+});
 module.exports = router;

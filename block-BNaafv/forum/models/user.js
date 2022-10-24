@@ -12,6 +12,10 @@ const userSchema = new Schema({
   questions: [{ type: Schema.Types.ObjectId, ref: "Question" }],
   answers: [{ type: Schema.Types.ObjectId, ref: "Answer" }],
   bio: String,
+  followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  following: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  isAdmin: { type: String, default: false },
+  isBlocked: { type: String, default: false },
 });
 
 userSchema.pre("save", async function (next) {
