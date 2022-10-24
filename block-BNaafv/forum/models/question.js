@@ -9,6 +9,8 @@ const questionSchema = new Schema({
   tags: [String],
   answers: [{ type: Schema.Types.ObjectId, ref: "Answer" }],
   slug: String,
+  votes: { type: Number, default: 0 },
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 questionSchema.pre("save", function (next) {

@@ -3,14 +3,10 @@ const router = express.Router();
 const auth = require("../middlewares/auth");
 const User = require("../models/user");
 
-/* current user*/
-router.get("/current-user", auth.verifyToken, async function (req, res, next) {
-  return res.json({ user: req.user });
-});
-
-//register user
+//register admin user
 router.post("/register", async (req, res, next) => {
   try {
+    req.body.isAdmin = true;
     let user = await User.create(req.body);
     let token = await user.signToken();
     return res.json({ user: await user.userJSON(token) });
@@ -36,13 +32,14 @@ router.post("/login", async (req, res, next) => {
     if (!user) {
       return next("User not found. please register first ");
     }
-    if (user.isBlocked) {
-      return next("Your Account is Blocked. Contact Admin");
+    if (!user.isAdmin) {
+      return next("Only Admins are allowed to login");
     }
     let result = await user.verifyPassword(password);
     if (!result) {
       return next("Wrong Password");
     }
+
     let token = await user.signToken();
     return res.json({ user: await user.userJSON(token) });
   } catch (error) {
